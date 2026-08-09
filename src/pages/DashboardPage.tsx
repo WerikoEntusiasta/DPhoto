@@ -53,6 +53,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
   const [pixKeyInput, setPixKeyInput] = useState(user?.pixKey || '');
   const [savingSettings, setSavingSettings] = useState(false);
 
+  const [subscriptionBanner, setSubscriptionBanner] = useState<string | null>(null);
+
   const loadDashboardData = async () => {
     setLoading(true);
     try {
@@ -71,6 +73,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     loadDashboardData();
+
+    // Check if redirected after subscription checkout
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subscription') === 'success' || params.get('subscription') === 'success_mock') {
+      setSubscriptionBanner('Parabéns! Sua assinatura do Plano Fotógrafo Pro foi ativada com sucesso.');
+      refreshUser();
+    } else if (params.get('subscription') === 'cancelled') {
+      setSubscriptionBanner('O processo de assinatura foi cancelado. Você pode tentar novamente a qualquer momento.');
+    }
   }, []);
 
   // Handle Create Event
@@ -253,6 +264,22 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
             </button>
           </div>
         </div>
+
+        {/* Subscription Status Notification Banner */}
+        {subscriptionBanner && (
+          <div className="max-w-7xl mx-auto mt-4 p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-sm font-semibold flex items-center justify-between shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-5 h-5 text-indigo-600 shrink-0" />
+              <span>{subscriptionBanner}</span>
+            </div>
+            <button
+              onClick={() => setSubscriptionBanner(null)}
+              className="text-xs text-indigo-600 font-bold hover:underline"
+            >
+              Fechar
+            </button>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="max-w-7xl mx-auto mt-6 flex overflow-x-auto gap-2 text-sm border-b border-slate-100 pb-1">

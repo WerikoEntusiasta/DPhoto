@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Lock, Mail, User as UserIcon, Phone, FileText, Building2, ArrowRight, AlertCircle } from 'lucide-react';
+import { Lock, Mail, User as UserIcon, Phone, ArrowRight, AlertCircle, Sparkles, CreditCard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
 import { APP_CONFIG } from '../config/index';
 import { DPhotoLogo } from '../components/DPhotoLogo';
 
@@ -41,6 +42,18 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
         phone,
         password
       });
+
+      // Directly redirect to subscription payment checkout
+      try {
+        const subRes = await api.createProSubscription();
+        if (subRes && subRes.url) {
+          window.location.href = subRes.url;
+          return;
+        }
+      } catch (subErr) {
+        console.warn('Redirecting to dashboard:', subErr);
+      }
+
       onNavigate('dashboard');
     } catch (err: any) {
       setError(err.message || 'Falha ao criar conta.');
@@ -60,8 +73,25 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
             Criar conta de Fotógrafo
           </h2>
           <p className="mt-1 text-xs text-slate-500">
-            Comece a vender fotos de seus eventos em poucos minutos no DPhoto
+            Cadastre-se para assinar o Plano Fotógrafo Pro no DPhoto
           </p>
+        </div>
+
+        {/* Plan summary badge */}
+        <div className="p-3 bg-indigo-50/80 border border-indigo-200/80 rounded-2xl flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-indigo-600 text-white font-bold">
+              <CreditCard className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="font-bold text-slate-900">Plano Fotógrafo Pro</div>
+              <div className="text-slate-500 text-[11px]">Cobrança mensal no cartão</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="font-black text-indigo-700 text-sm">R$ 97,90</div>
+            <div className="text-[10px] text-indigo-500 font-semibold uppercase">/ mês</div>
+          </div>
         </div>
 
         {error && (
@@ -214,9 +244,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 mt-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3.5 mt-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
-            {loading ? 'Criando sua conta...' : 'Cadastrar e Começar Grátis'}
+            {loading ? 'Criando conta e gerando pagamento...' : 'Cadastrar e Ir para Pagamento (R$ 97,90/mês)'}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>

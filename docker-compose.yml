@@ -1,19 +1,23 @@
-version: '3.8'
+name: dphoto
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
     image: werikoliveira/dphoto:latest
     container_name: dphoto-app
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       - PORT=3000
       - NODE_ENV=production
-    env_file:
-      - .env
+      - APP_NAME=DPhoto
+      - APP_URL=http://localhost:3000
     volumes:
       - ./data:/app/data
-    restart: unless-stopped
+
+x-casaos:
+  main: app
+  title:
+    en_us: DPhoto Pro
+  icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/camera.png
+  port_map: "3000"

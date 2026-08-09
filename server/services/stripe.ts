@@ -195,22 +195,31 @@ export class StripeService {
     const stripe = getStripe();
     if (stripe) {
       const priceId = process.env.STRIPE_PRO_PRICE_ID;
-      if (!priceId) {
-        throw new Error('STRIPE_PRO_PRICE_ID não configurado no ambiente.');
-      }
+      
+      const lineItem = priceId
+        ? { price: priceId, quantity: 1 }
+        : {
+            price_data: {
+              currency: 'brl',
+              product_data: {
+                name: 'DPhoto Pro - Plano Fotógrafo',
+                description: 'Assinatura mensal DPhoto (Fotos e Eventos ilimitados + 5% de comissão)',
+              },
+              unit_amount: 9790, // R$ 97,90
+              recurring: {
+                interval: 'month' as const
+              }
+            },
+            quantity: 1
+          };
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'subscription',
         customer_email: user.email,
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1
-          }
-        ],
-        success_url: `${appBaseUrl}/dashboard/assinatura?status=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${appBaseUrl}/dashboard/assinatura?status=cancelled`,
+        line_items: [lineItem],
+        success_url: `${appBaseUrl}/dashboard?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${appBaseUrl}/dashboard?subscription=cancelled`,
         metadata: {
           userId: user.id
         }
@@ -231,7 +240,7 @@ export class StripeService {
       });
 
       return {
-        url: `${appBaseUrl}/dashboard/assinatura?status=success&mock=true`,
+        url: `${appBaseUrl}/dashboard?subscription=success_mock`,
         isMock: true
       };
     }
