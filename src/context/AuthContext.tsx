@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('fotovenda_token', res.token);
     setToken(res.token);
     setUser(res.user);
-    return res.user;
+    return res;
   };
 
   const logout = () => {

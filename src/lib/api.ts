@@ -41,15 +41,11 @@ export const api = {
   async registerAndSubscribe(data: {
     name: string;
     companyName?: string;
-    cpfCnpj: string;
+    cpfCnpj?: string;
     email: string;
-    phone: string;
+    phone?: string;
     password: string;
-    cardNumber: string;
-    cardHolder: string;
-    cardExp: string;
-    cardCvc: string;
-  }): Promise<{ user: User; token: string }> {
+  }): Promise<{ user: User; token: string; checkoutUrl?: string; isMock?: boolean }> {
     const res = await fetch(`${API_BASE}/api/auth/register-and-subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -57,7 +53,7 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || 'Falha no processamento do pagamento e criação de conta.');
+      throw new Error(err.error || 'Falha ao criar conta e redirecionar para o checkout.');
     }
     return res.json();
   },
@@ -226,6 +222,19 @@ export const api = {
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.error || 'Erro ao processar pagamento com cartão.');
+    }
+    return res.json();
+  },
+
+  async verifySubscriptionSession(sessionId: string) {
+    const res = await fetch(`${API_BASE}/api/stripe/subscription/verify-session`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ sessionId })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Erro ao verificar sessão do Stripe.');
     }
     return res.json();
   },

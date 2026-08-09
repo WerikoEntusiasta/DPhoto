@@ -76,10 +76,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
 
     // Check if redirected after subscription checkout
     const params = new URLSearchParams(window.location.search);
-    if (params.get('subscription') === 'success' || params.get('subscription') === 'success_mock') {
+    const subStatus = params.get('subscription');
+    const sessionId = params.get('session_id');
+
+    if (subStatus === 'success' || subStatus === 'success_mock') {
+      if (sessionId) {
+        api.verifySubscriptionSession(sessionId).then(() => {
+          refreshUser();
+        }).catch(err => console.error(err));
+      } else {
+        refreshUser();
+      }
       setSubscriptionBanner('Parabéns! Sua assinatura do Plano Fotógrafo Pro foi ativada com sucesso.');
-      refreshUser();
-    } else if (params.get('subscription') === 'cancelled') {
+    } else if (subStatus === 'cancelled') {
       setSubscriptionBanner('O processo de assinatura foi cancelado. Você pode tentar novamente a qualquer momento.');
     }
   }, []);

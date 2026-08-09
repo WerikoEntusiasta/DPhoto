@@ -101,10 +101,10 @@ async function startServer() {
     }
   });
 
-  // Auth: Register & Subscribe to Pro Plan with Card Payment
+  // Auth: Register & Subscribe to Pro Plan with Stripe Checkout
   app.post('/api/auth/register-and-subscribe', async (req, res) => {
     try {
-      const { name, companyName, cpfCnpj, email, phone, password, cardNumber, cardHolder, cardExp, cardCvc } = req.body;
+      const { name, companyName, cpfCnpj, email, phone, password } = req.body;
 
       if (!name || !email || !password) {
         return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
@@ -115,14 +115,7 @@ async function startServer() {
         return res.status(400).json({ error: 'Este e-mail já está cadastrado.' });
       }
 
-      // Step 1: Validate credit card BEFORE creating any user in DB
-      try {
-        StripeService.validateCreditCard(cardNumber, cardExp, cardCvc, cardHolder);
-      } catch (cardErr: any) {
-        return res.status(400).json({ error: cardErr.message || 'Cartão de crédito recusado.' });
-      }
-
-      // Step 2: Create initial user
+      // Step 1: Create user in DB with initial FREE plan (will be upgraded by Stripe checkout session or webhook)
       const newUser: User = {
         id: `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         name,
@@ -138,21 +131,25 @@ async function startServer() {
       };
 
       db.addUser(newUser);
+      const token = AuthService.createToken(newUser);
 
-      // Step 3: Process Card Subscription Payment (Charges R$ 97,90)
-      const payResult = await StripeService.processCardSubscriptionPayment(newUser.id, {
-        cardNumber,
-        cardHolder,
-        cardExp,
-        cardCvc
-      });
+      // Step 2: Create Stripe Subscription Checkout Session
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const host = req.headers['x-forwarded-host'] || req.get('host');
+      const appBaseUrl = `${protocol}://${host}`;
+
+      const session = await StripeService.createProSubscriptionSession(newUser.id, appBaseUrl);
 
       const updatedUser = db.getUserById(newUser.id) || newUser;
-      const token = AuthService.createToken(updatedUser);
 
-      res.json({ user: updatedUser, token, subscription: payResult.subscription });
+      res.json({
+        user: updatedUser,
+        token,
+        checkoutUrl: session.url,
+        isMock: session.isMock
+      });
     } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Falha ao processar assinatura e criar conta.' });
+      res.status(400).json({ error: err.message || 'Falha ao criar conta e iniciar checkout do Stripe.' });
     }
   });
 
@@ -563,6 +560,20 @@ async function startServer() {
 
       const session = await StripeService.createProSubscriptionSession(req.user.id, appBaseUrl);
       res.json(session);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Verify Stripe Checkout Session on redirect back
+  app.post('/api/stripe/subscription/verify-session', requireAuth, async (req: any, res) => {
+    try {
+      const { sessionId } = req.body;
+      if (!sessionId) {
+        return res.status(400).json({ error: 'sessionId é obrigatório.' });
+      }
+      const result = await StripeService.verifyCheckoutSession(sessionId, req.user.id);
+      res.json(result);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
