@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  appName: process.env.APP_NAME || 'FotoVenda',
+  appName: process.env.APP_NAME || 'DPhoto',
   appUrl: process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000',
   monthlyPlanPrice: 97.90,
   monthlyPlanCurrency: 'BRL',
@@ -7,7 +7,8 @@ export const APP_CONFIG = {
   
   // Sugestões de nomes comerciais para o SaaS (Requisito #63)
   commercialNameSuggestions: [
-    'FotoVenda',
+    'DPhoto',
+    'DPhoto Pro',
     'PicVenda',
     'SnapClick',
     'FotoSpot',

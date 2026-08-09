@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Camera, User as UserIcon, LogOut, Menu, X, ShieldCheck, Sparkles } from 'lucide-react';
+import { User as UserIcon, LogOut, Menu, X, ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { APP_CONFIG } from '../config/index';
+import { DPhotoLogo } from './DPhotoLogo';
 
 interface NavbarProps {
   currentView: string;
@@ -18,20 +18,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <div
-            className="flex items-center gap-2.5 cursor-pointer group"
+            className="cursor-pointer group"
             onClick={() => onNavigate('home')}
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-100 group-hover:scale-105 transition-transform">
-              <Camera className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xl font-black tracking-tight text-slate-900 font-sans">
-                {APP_CONFIG.appName}
-              </span>
-              <span className="text-xs block -mt-1 font-semibold text-indigo-600 tracking-wider uppercase">
-                SaaS Fotos
-              </span>
-            </div>
+            <DPhotoLogo size="md" />
           </div>
 
           {/* Desktop Navigation Links */}

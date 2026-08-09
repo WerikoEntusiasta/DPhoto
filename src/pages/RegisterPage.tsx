@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Camera, Lock, Mail, User as UserIcon, Phone, FileText, Building2, ArrowRight, AlertCircle } from 'lucide-react';
+import { Lock, Mail, User as UserIcon, Phone, FileText, Building2, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { APP_CONFIG } from '../config/index';
+import { DPhotoLogo } from '../components/DPhotoLogo';
 
 interface RegisterPageProps {
   onNavigate: (view: string) => void;
@@ -51,15 +52,15 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
   return (
     <div className="min-h-[90vh] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-3xl border border-slate-200 shadow-xs">
-        <div className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-100 mb-3">
-            <Camera className="w-6 h-6" />
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-3">
+            <DPhotoLogo size="lg" />
           </div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
             Criar conta de Fotógrafo
           </h2>
           <p className="mt-1 text-xs text-slate-500">
-            Comece a vender fotos de seus eventos em poucos minutos
+            Comece a vender fotos de seus eventos em poucos minutos no DPhoto
           </p>
         </div>
 

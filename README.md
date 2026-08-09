@@ -1,11 +1,11 @@
-# FotoVenda SaaS — Plataforma de Venda de Fotos para Fotógrafos de Eventos
+# DPhoto — Plataforma de Venda de Fotos para Fotógrafos de Eventos
 
-Uma plataforma SaaS moderna, simples e enxuta inspirada conceitualmente na Fotop, porém com uma experiência do usuário extremamente simplificada e mobile-first.
+Uma plataforma SaaS moderna, simples e enxuta para fotógrafos independentes venderem fotografias de eventos com experiência simplificada e mobile-first.
 
 ---
 
-## 💡 10 Sugestões de Nomes Comerciais (Requisito #63)
-1. **FotoVenda** (Nome Provisório)
+## 💡 Marca Oficial
+- **Nome Oficial:** DPhoto Pro (DPhoto)
 2. **PicVenda**
 3. **SnapClick**
 4. **FotoSpot**

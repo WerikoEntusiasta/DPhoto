@@ -10,7 +10,7 @@ export class WatermarkService {
    */
   static generateWatermarkedSvgUrl(
     imageSrc: string,
-    watermarkText: string = 'FOTOVENDA - COMPRA PROTEGIDA',
+    watermarkText: string = 'DPHOTO - COMPRA PROTEGIDA',
     width: number = 800,
     height: number = 600
   ): string {
