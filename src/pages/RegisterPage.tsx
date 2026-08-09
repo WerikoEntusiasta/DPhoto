@@ -230,7 +230,20 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
               </div>
 
               <h3 className="text-xl font-black text-white">DPhoto Pro - Plano Fotógrafo</h3>
-              <p className="text-xs text-slate-400 mt-1">Cobrança recorrente mensal via Stripe</p>
+              <p className="text-xs text-slate-400 mt-1">Cobrança mensal via Pix, Pix Recorrente ou Cartão de Crédito</p>
+
+              {/* Payment Methods Badges */}
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold rounded-lg flex items-center gap-1">
+                  ⚡ Pix Instantâneo
+                </span>
+                <span className="px-2.5 py-1 bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[11px] font-bold rounded-lg flex items-center gap-1">
+                  🔄 Pix Recorrente
+                </span>
+                <span className="px-2.5 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[11px] font-bold rounded-lg flex items-center gap-1">
+                  💳 Cartão de Crédito
+                </span>
+              </div>
 
               <div className="mt-6 p-4 bg-slate-900/80 rounded-2xl border border-slate-700/60 space-y-3">
                 <div className="flex justify-between items-center text-sm">

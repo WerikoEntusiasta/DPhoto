@@ -278,7 +278,7 @@ class DatabaseService {
 
   public getEventBySlug(photographerSlug: string, eventSlug: string): Event | undefined {
     return this.db.events.find(
-      e => e.photographerSlug === photographerSlug && e.slug === eventSlug && e.status !== 'ARCHIVED'
+      e => e.photographerSlug?.toLowerCase() === photographerSlug?.toLowerCase() && e.slug?.toLowerCase() === eventSlug?.toLowerCase() && e.status !== 'ARCHIVED'
     );
   }
 

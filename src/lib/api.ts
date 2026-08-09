@@ -160,7 +160,10 @@ export const api = {
     if (search) params.append('search', search);
 
     const res = await fetch(`${API_BASE}/api/public/events/${eventId}/photos?${params.toString()}`);
-    if (!res.ok) throw new Error('Erro ao buscar fotos.');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Erro ao buscar fotos.');
+    }
     return res.json();
   },
 

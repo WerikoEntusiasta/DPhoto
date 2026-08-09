@@ -40,8 +40,15 @@ export const PublicEventGalleryPage: React.FC<PublicEventGalleryPageProps> = ({
       const res = await api.getPublicEvent(photographerSlug, eventSlug);
       setEventData({ event: res.event, albums: res.albums, photographerName: res.photographerName });
 
-      const photosRes = await api.getPublicPhotos(res.event.id);
-      setPhotos(photosRes.photos);
+      if (res.event?.id) {
+        try {
+          const photosRes = await api.getPublicPhotos(res.event.id);
+          setPhotos(photosRes.photos || []);
+        } catch (photoErr) {
+          console.error('Error fetching photos for event', photoErr);
+          setPhotos([]);
+        }
+      }
     } catch (err: any) {
       console.error('Gallery loading error', err);
     } finally {
@@ -398,9 +405,15 @@ export const PublicEventGalleryPage: React.FC<PublicEventGalleryPageProps> = ({
                 />
               </div>
 
-              <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Pagamento 100% seguro processado via Stripe. Sem necessidade de senha.</span>
+              <div className="text-[11px] text-slate-400 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold rounded text-[10px]">⚡ Pix</span>
+                  <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold rounded text-[10px]">💳 Cartão de Crédito</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Pagamento 100% seguro por Pix ou Cartão via Stripe.</span>
+                </div>
               </div>
 
               <button

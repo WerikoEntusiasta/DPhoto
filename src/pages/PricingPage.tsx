@@ -41,6 +41,10 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
               <div className="space-y-4 py-8 text-sm text-slate-200">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span><strong>Pagamento Flexível</strong> por Pix, Pix Recorrente ou Cartão de Crédito</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
                   <span><strong>Cobrança Mensal</strong> (cancele a qualquer momento sem taxas)</span>
                 </div>
                 <div className="flex items-center gap-3">

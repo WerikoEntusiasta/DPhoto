@@ -131,9 +131,9 @@ export class StripeService {
         quantity: 1
       }));
 
-      // Create Stripe Checkout Session with Application Fee Amount if Stripe Connect is used
+      // Create Stripe Checkout Session with Pix and Card payment options
       const sessionCreateParams: Stripe.Checkout.SessionCreateParams = {
-        payment_method_types: ['card'],
+        payment_method_types: ['card', 'pix'],
         line_items: lineItems,
         mode: 'payment',
         customer_email: params.customerEmail,
@@ -332,7 +332,7 @@ export class StripeService {
           };
 
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
+        payment_method_types: ['card', 'pix'],
         mode: 'subscription',
         customer_email: user.email,
         line_items: [lineItem],
