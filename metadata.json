@@ -1,0 +1,6 @@
+{
+  "name": "FotoVenda SaaS",
+  "description": "Plataforma SaaS simples e moderna para venda de fotografias de eventos online por fotógrafos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
