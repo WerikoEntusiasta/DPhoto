@@ -38,6 +38,30 @@ export const api = {
     return res.json();
   },
 
+  async registerAndSubscribe(data: {
+    name: string;
+    companyName?: string;
+    cpfCnpj: string;
+    email: string;
+    phone: string;
+    password: string;
+    cardNumber: string;
+    cardHolder: string;
+    cardExp: string;
+    cardCvc: string;
+  }): Promise<{ user: User; token: string }> {
+    const res = await fetch(`${API_BASE}/api/auth/register-and-subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Falha no processamento do pagamento e criação de conta.');
+    }
+    return res.json();
+  },
+
   async me(): Promise<{ user: User }> {
     const res = await fetch(`${API_BASE}/api/auth/me`, {
       headers: getAuthHeaders()
@@ -190,6 +214,19 @@ export const api = {
       headers: getAuthHeaders()
     });
     if (!res.ok) throw new Error('Erro ao assinar Plano Profissional.');
+    return res.json();
+  },
+
+  async processCardSubscription(data: { cardNumber: string; cardHolder: string; cardExp: string; cardCvc: string }) {
+    const res = await fetch(`${API_BASE}/api/stripe/subscription/process-card`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Erro ao processar pagamento com cartão.');
+    }
     return res.json();
   },
 

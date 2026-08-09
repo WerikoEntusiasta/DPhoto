@@ -8,6 +8,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<User>;
   register: (data: any) => Promise<User>;
+  registerAndSubscribe: (data: any) => Promise<User>;
   logout: () => void;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   refreshUser: () => Promise<void>;
@@ -58,6 +59,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return res.user;
   };
 
+  const registerAndSubscribe = async (data: any) => {
+    const res = await api.registerAndSubscribe(data);
+    localStorage.setItem('fotovenda_token', res.token);
+    setToken(res.token);
+    setUser(res.user);
+    return res.user;
+  };
+
   const logout = () => {
     localStorage.removeItem('fotovenda_token');
     setToken(null);
@@ -65,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, setUser, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, registerAndSubscribe, logout, setUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

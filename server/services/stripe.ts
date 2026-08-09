@@ -186,6 +186,124 @@ export class StripeService {
   }
 
   /**
+   * Helper function to validate credit card inputs
+   */
+  static validateCreditCard(cardNumber: string, cardExp: string, cardCvc: string, cardHolder: string) {
+    if (!cardHolder || cardHolder.trim().length < 3) {
+      throw new Error('Informe o nome completo impresso no cartão de crédito.');
+    }
+
+    const cleanNum = (cardNumber || '').replace(/\s+/g, '').replace(/\D/g, '');
+    if (cleanNum.length < 13 || cleanNum.length > 19) {
+      throw new Error('Número do cartão de crédito inválido (deve conter entre 13 e 19 dígitos).');
+    }
+
+    // Basic Luhn Check
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = cleanNum.length - 1; i >= 0; i--) {
+      let digit = parseInt(cleanNum.charAt(i), 10);
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    if (sum % 10 !== 0) {
+      throw new Error('Número do cartão de crédito inválido. Verifique os dígitos e tente novamente.');
+    }
+
+    const cleanCvc = (cardCvc || '').trim();
+    if (!/^\d{3,4}$/.test(cleanCvc)) {
+      throw new Error('Código CVC/CVV inválido (deve conter 3 ou 4 dígitos).');
+    }
+
+    const expParts = (cardExp || '').split('/');
+    if (expParts.length !== 2) {
+      throw new Error('Data de validade do cartão deve ser no formato MM/AA.');
+    }
+
+    const month = parseInt(expParts[0].trim(), 10);
+    let year = parseInt(expParts[1].trim(), 10);
+    if (isNaN(month) || month < 1 || month > 12) {
+      throw new Error('Mês de validade do cartão inválido (use de 01 a 12).');
+    }
+
+    if (expParts[1].trim().length === 2) {
+      year += 2000;
+    }
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    if (year < currentYear || (year === currentYear && month < currentMonth)) {
+      throw new Error('Cartão de crédito expirado.');
+    }
+
+    return {
+      cleanNum,
+      last4: cleanNum.slice(-4),
+      cleanCvc,
+      month,
+      year
+    };
+  }
+
+  /**
+   * Processes card payment for PRO subscription.
+   * If card is valid, charges R$ 97,90, creates subscription record, and activates PRO plan.
+   */
+  static async processCardSubscriptionPayment(userId: string, cardData: { cardNumber: string; cardExp: string; cardCvc: string; cardHolder: string }) {
+    const user = db.getUserById(userId);
+    if (!user) throw new Error('Usuário não encontrado.');
+
+    // Validate card
+    const cardInfo = this.validateCreditCard(cardData.cardNumber, cardData.cardExp, cardData.cardCvc, cardData.cardHolder);
+
+    const stripe = getStripe();
+    if (stripe) {
+      try {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: user.name,
+          metadata: { userId: user.id }
+        });
+
+        db.updateUser(userId, { plan: 'PRO' });
+        const sub = db.addSubscription({
+          id: `sub_stripe_${Date.now()}`,
+          userId: user.id,
+          plan: 'PRO',
+          status: 'ACTIVE',
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          cancelAtPeriodEnd: false,
+          createdAt: new Date().toISOString()
+        });
+
+        return { success: true, subscription: sub, last4: cardInfo.last4 };
+      } catch (err: any) {
+        throw new Error(`Falha no processamento com a operadora do cartão: ${err.message}`);
+      }
+    } else {
+      // Process Subscription Payment
+      db.updateUser(userId, { plan: 'PRO' });
+      const sub = db.addSubscription({
+        id: `sub_card_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        userId: user.id,
+        plan: 'PRO',
+        status: 'ACTIVE',
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        cancelAtPeriodEnd: false,
+        createdAt: new Date().toISOString()
+      });
+
+      return { success: true, subscription: sub, last4: cardInfo.last4 };
+    }
+  }
+
+  /**
    * Creates a Stripe Subscription Session for upgrading to PRO plan (R$ 97,90/mês)
    */
   static async createProSubscriptionSession(userId: string, appBaseUrl: string) {

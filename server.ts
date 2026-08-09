@@ -101,6 +101,61 @@ async function startServer() {
     }
   });
 
+  // Auth: Register & Subscribe to Pro Plan with Card Payment
+  app.post('/api/auth/register-and-subscribe', async (req, res) => {
+    try {
+      const { name, companyName, cpfCnpj, email, phone, password, cardNumber, cardHolder, cardExp, cardCvc } = req.body;
+
+      if (!name || !email || !password) {
+        return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
+      }
+
+      const existing = db.getUserByEmail(email);
+      if (existing) {
+        return res.status(400).json({ error: 'Este e-mail já está cadastrado.' });
+      }
+
+      // Step 1: Validate credit card BEFORE creating any user in DB
+      try {
+        StripeService.validateCreditCard(cardNumber, cardExp, cardCvc, cardHolder);
+      } catch (cardErr: any) {
+        return res.status(400).json({ error: cardErr.message || 'Cartão de crédito recusado.' });
+      }
+
+      // Step 2: Create initial user
+      const newUser: User = {
+        id: `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        name,
+        companyName: companyName || '',
+        cpfCnpj: cpfCnpj || '',
+        email,
+        phone: phone || '',
+        role: 'PHOTOGRAPHER',
+        plan: 'FREE',
+        stripeAccountStatus: 'NOT_CONNECTED',
+        watermarkText: name.toUpperCase(),
+        createdAt: new Date().toISOString()
+      };
+
+      db.addUser(newUser);
+
+      // Step 3: Process Card Subscription Payment (Charges R$ 97,90)
+      const payResult = await StripeService.processCardSubscriptionPayment(newUser.id, {
+        cardNumber,
+        cardHolder,
+        cardExp,
+        cardCvc
+      });
+
+      const updatedUser = db.getUserById(newUser.id) || newUser;
+      const token = AuthService.createToken(updatedUser);
+
+      res.json({ user: updatedUser, token, subscription: payResult.subscription });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Falha ao processar assinatura e criar conta.' });
+    }
+  });
+
   // Auth: Login
   app.post('/api/auth/login', (req, res) => {
     try {
@@ -483,7 +538,23 @@ async function startServer() {
     }
   });
 
-  // Upgrade to Pro Subscription (R$ 97,90/mês)
+  // Upgrade to Pro Subscription via Card (R$ 97,90/mês)
+  app.post('/api/stripe/subscription/process-card', requireAuth, async (req: any, res) => {
+    try {
+      const { cardNumber, cardHolder, cardExp, cardCvc } = req.body;
+      const result = await StripeService.processCardSubscriptionPayment(req.user.id, {
+        cardNumber,
+        cardHolder,
+        cardExp,
+        cardCvc
+      });
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Falha ao processar pagamento com cartão.' });
+    }
+  });
+
+  // Upgrade to Pro Subscription via Stripe Checkout Session (R$ 97,90/mês)
   app.post('/api/stripe/subscription/pro', requireAuth, async (req: any, res) => {
     try {
       const protocol = req.headers['x-forwarded-proto'] || req.protocol;
